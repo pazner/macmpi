@@ -14,8 +14,7 @@ import psutil
 import shlex
 
 PROGRAM_PATH = os.path.abspath(__file__)
-MPI_EXEC = shlex.split(os.environ.get("TMUX_MPI_MPIRUN", "mpiexec"))
-MODE = os.environ.get("TMUX_MPI_MODE", "window")
+MPI_EXEC = shlex.split(os.environ.get("MACMPI_MPIRUN", "mpiexec"))
 
 
 def check_dtach():
@@ -26,9 +25,9 @@ def check_dtach():
 
 def print_help():
     print(
-        """tmux-mpi is a tool for running MPI processes in tmux windows. Run with:
+        """macmpi is a tool for running MPI processes in iTerm2 tabs. Run with:
 
-    tmux-mpi <nproc> <executable>
+    macmpi <nproc> <executable>
 
 If the program crashes there are likely to be dtach instances that will need
 manually cleaning up. See README.rst for configuration.
@@ -45,9 +44,6 @@ def check_args():
 
 class TerminalSession:
     def __init__(self):
-        if not MODE in ("window", "pane"):
-            raise RuntimeError('TMUX_MPI_MODE should be either "window" or "pane".')
-        self.mode = MODE
         self.connection = None
         self.app = None
         self.window = None
@@ -122,7 +118,7 @@ async def main(connection):
         win_cmd = "dtach -a " + socket_files[px] + "\n"
         await it2session.send_keys(px, win_cmd)
 
-    # loop over the tmux windows and send a newline to allow the execution to continue
+    # loop over the iterm tabs and send a newline to allow the execution to continue
     await it2session.send_enter()
 
     def cleanup_mpi():
@@ -144,14 +140,6 @@ async def main(connection):
 
     _cleanup.append(cleanup_mpi)
 
-    # run the post launch command if exists
-
-    if "TMUX_MPI_POST_LAUNCH" in os.environ:
-        post_launch = shlex.split(
-            os.environ.get("TMUX_MPI_POST_LAUNCH", "").replace("TMUX_MPI_SESSION_NAME", it2session.name)
-        )
-        subprocess.check_call(post_launch)
-
     # Try to terminate cleanly
     mpiproc.communicate()
     a = input("\nPress Enter to close iTerm window and quit")
@@ -172,11 +160,11 @@ def dtach_child():
 
 def exec_child():
     """
-    Waits for the newline from libtmux then runs the user command.
+    Waits for the newline from iTerm then runs the user command.
     """
 
-    # Wait for the newline to be send that indicates all the tmux windows are connected.
-    a = input("Waiting for tmux windows to all be connected...\n")
+    # Wait for the newline to be send that indicates all the iTerm windows are connected.
+    a = input("Waiting for iTerm windows to all be connected...\n")
 
     # launch the actual user command
     cmd = sys.argv[3:]
@@ -193,16 +181,3 @@ if __name__ == "__main__":
         exec_child()
     else:
         iterm2.run_until_complete(main)
-
-
-# async def main(connection):
-#     # Your code goes here. Here's a bit of example code that adds a tab to the current window:
-#     app = await iterm2.async_get_app(connection)
-#     window = app.current_terminal_window
-#     if window is not None:
-#         await window.async_create_tab()
-#     else:
-#         # You can view this message in the script console.
-#         print("No current window")
-
-# iterm2.run_until_complete(main)
