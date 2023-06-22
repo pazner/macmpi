@@ -57,6 +57,7 @@ class TerminalSession:
         for px in range(n - 1):
             await self.window.async_create_tab()
         await self.window.tabs[0].async_activate()
+        await self.app.async_activate(False)
 
     async def send_keys(self, ix, keys):
         await self.window.tabs[ix].current_session.async_send_text(keys)
