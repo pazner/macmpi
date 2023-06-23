@@ -1,5 +1,9 @@
 #!/usr/bin/env python3
 
+# macmpi - tool for running MPI processes in iTerm2 tabs
+#
+# Adapted from tmux-mpi by Will Saunders, https://github.com/wrs20/tmux-mpi
+
 import iterm2
 import sys
 import subprocess
