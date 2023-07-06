@@ -11,9 +11,10 @@ MacMPI.
 ## Installation
 
 1. Install iTerm by downloading it from [the website][iterm].
-2. Install dtach with `brew intall dtach`
-3. Install the dependencies with `pip install -r requirements.txt`
-4. Run MacMPI with `python macmpi.py <np> <command>`, where `<np>` is the
+2. Enable Python API in iTerm from Preferences/General/Magic.
+3. Install dtach with `brew install dtach`
+4. Install the dependencies with `pip install -r requirements.txt`
+5. Run MacMPI with `python macmpi.py <np> <command>`, where `<np>` is the
    number of ranks, and `<command>` is the command to be run (analogous to
    `mpirun -np <np> <command>`)
 
