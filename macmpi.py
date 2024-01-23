@@ -19,7 +19,10 @@ import shlex
 
 PROGRAM_PATH = os.path.abspath(__file__)
 MPI_EXEC = shlex.split(os.environ.get("MACMPI_MPIRUN", "mpiexec"))
+TAB_PANE_MODE = os.environ.get("MACMPI_MODE", "tab")
 
+if TAB_PANE_MODE != "tab" and TAB_PANE_MODE != "pane":
+    sys.exit("MACMPI_MODE must be either 'tab' or 'pane'")
 
 def check_dtach():
     dtach = shutil.which("dtach")
@@ -51,6 +54,7 @@ class TerminalSession:
         self.connection = None
         self.app = None
         self.window = None
+        self.n = 0
 
     async def connect(self):
         self.connection = await iterm2.Connection.async_create()
@@ -58,17 +62,33 @@ class TerminalSession:
     async def add(self, n):
         self.app = await iterm2.async_get_app(self.connection)
         self.window = await iterm2.Window.async_create(self.connection)
-        for px in range(n - 1):
-            await self.window.async_create_tab()
-        await self.window.tabs[0].async_activate()
+        self.n = n
+
+        if TAB_PANE_MODE == "tab":
+            for px in range(n - 1):
+                await self.window.async_create_tab()
+            await self.window.tabs[0].async_activate()
+        elif TAB_PANE_MODE == "pane":
+            for px in range(n - 1):
+                await self.window.tabs[0].root.sessions[0].async_split_pane(vertical=True)
+            await self.window.tabs[0].sessions[0].async_activate()
+
         await self.app.async_activate(False)
 
+    async def get_session(self, ix):
+        if TAB_PANE_MODE == "tab":
+            return self.window.tabs[ix].current_session
+        elif TAB_PANE_MODE == "pane":
+            return self.window.tabs[0].root.sessions[ix]
+
     async def send_keys(self, ix, keys):
-        await self.window.tabs[ix].current_session.async_send_text(keys)
+        session = await self.get_session(ix)
+        await session.async_send_text(keys)
 
     async def send_enter(self):
-        for tab in self.window.tabs:
-            await tab.current_session.async_send_text("\n")
+        for ix in range(self.n):
+            session = await self.get_session(ix)
+            await session.async_send_text("\n")
 
     async def cleanup(self):
         try:
