@@ -1,11 +1,11 @@
 # MacMPI
 
-MacMPI is a tool (inspired by and based on [tmux-mpi][tmux-mpi] that can
+MacMPI is a tool (inspired by and based on [tmux-mpi][tmux-mpi]) that can
 be used to launch MPI applications, opening a new terminal window with one
-tab per MPI rank, attaching each tab to the corresponding rank. MacMPI 
+tab per MPI rank, attaching each tab to the corresponding rank. MacMPI
 integrates with the [iTerm2][iterm] terminal on macOS.
 
-This allows for debugging MPI applications by launching lldb or gdb with 
+This allows for debugging MPI applications by launching lldb or gdb with
 MacMPI.
 
 ## Installation
